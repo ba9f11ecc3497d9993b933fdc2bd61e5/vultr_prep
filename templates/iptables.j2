@@ -6,6 +6,7 @@
 -A INPUT -s 127.0.0.0/8 -i lo -m comment --comment "allow connections to loopback interface" -j ACCEPT
 -A INPUT -i ens3 -m conntrack --ctstate RELATED,ESTABLISHED -m comment --comment "allow connections established by this machine to come back" -j ACCEPT
 -A INPUT -i ens3 -p tcp -m tcp --dport 22 -m comment --comment "allow connections on port 22 from anyone" -j ACCEPT
+-A INPUT -i ens3 -p tcp -m tcp --dport 80 -m comment --comment "allow connections on port 80 from anyone used by the pki helper page when running without letsencrypt" -j ACCEPT
 -A INPUT -i ens3 -p tcp -m tcp --dport 443 -m comment --comment "allow connections on port 443 from anyone" -j ACCEPT
 COMMIT
 # Completed on Wed Feb 17 19:30:57 2021
