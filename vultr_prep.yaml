@@ -1,0 +1,78 @@
+---
+
+# file : vultr_prep.yaml
+
+- name: prep vultr box
+  hosts: all
+  tasks:
+
+  - name: configure sudoers
+    template:
+      src: templates/sudoers.j2
+      dest: /etc/sudoers
+      owner: root
+      group: root
+      mode: 0440
+
+  - name: Ensure user "ubuntu" exists 
+    user:
+      name: ubuntu
+      shell: /bin/bash
+      groups: sudo
+
+  - name: stop and disable ufw
+    ansible.builtin.service:
+      name: ufw
+      state: stopped
+      enabled: no
+
+  - name: remove and purge ufw
+    apt:
+      name: ufw
+      state: absent
+      purge: yes
+
+  - name: flush old ufw rules
+    ansible.builtin.shell: iptables -F
+
+  - name: remove old ufw chains
+    ansible.builtin.shell: iptables -X
+ 
+  - name: install iptables file
+    template:
+      src: templates/iptables.j2
+      dest: /etc/iptables
+      owner: root
+      group: root
+      mode: 0440
+
+  - name: run iptables-restore 
+    ansible.builtin.shell: iptables-restore < /etc/iptables
+
+  - name: create ~/.ssh dir for user ubuntu
+    ansible.builtin.file:
+      path: /home/ubuntu/.ssh
+      state: directory
+      owner: ubuntu
+      group: ubuntu
+      mode: 0700
+
+  - name: move authorized_keys from root to ubuntu
+    ansible.builtin.shell: mv /root/.ssh/authorized_keys /home/ubuntu/.ssh/authorized_keys
+
+  - name: chown ubuntu authorized_keys
+    ansible.builtin.shell: chown ubuntu:ubuntu /home/ubuntu/.ssh/authorized_keys
+
+  - name: configure sshd_config from template
+    template:
+      src: templates/sshd_config.j2
+      dest: /etc/ssh/sshd_config
+      owner: root
+      group: root
+      mode: 0644
+
+
+
+
+
+ 
